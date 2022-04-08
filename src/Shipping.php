@@ -221,6 +221,10 @@ class Shipping extends Ups
                 $shipFromNode->appendChild($xml->createElement('FaxNumber', $shipment->getShipFrom()->getFaxNumber()));
             }
 
+            if (!empty($shipment->getShipFrom()->getVendorInfo())) {
+                $shipFromNode->appendChild($shipment->getShipFrom()->getVendorInfo()->toNode($xml));
+            }
+
             $shipFromNode->appendChild($shipment->getShipFrom()->getAddress()->toNode($xml));
         }
 
@@ -429,6 +433,10 @@ class Shipping extends Ups
         if ($receiptSpec) {
             $container->appendChild($xml->importNode($this->compileReceiptSpecificationNode($receiptSpec), true));
         }
+
+        if ($shipment->getLocale()) {
+            $shipmentNode->appendChild($xml->createElement('Locale', $shipment->getLocale()));
+        }
         return $xml->saveXML();
     }
 
@@ -636,7 +644,7 @@ class Shipping extends Ups
         }
 
         if (!empty($labelSpecificationOpts)) {
-            $labelSpec = $request->appendChild($xml->createElement('LabelSpecification'));
+            $labelSpec = $container->appendChild($xml->createElement('LabelSpecification'));
 
             if (isset($labelSpecificationOpts['userAgent'])) {
                 $labelSpec->appendChild($xml->createElement('HTTPUserAgent', $labelSpecificationOpts['userAgent']));
@@ -649,12 +657,12 @@ class Shipping extends Ups
         }
 
         if (!empty($labelDeliveryOpts)) {
-            $labelDelivery = $request->appendChild($xml->createElement('LabelDelivery'));
+            $labelDelivery = $container->appendChild($xml->createElement('LabelDelivery'));
             $labelDelivery->appendChild($xml->createElement('LabelLinkIndicator', $labelDeliveryOpts['link']));
         }
 
         if (!empty($translateOpts)) {
-            $translate = $request->appendChild($xml->createElement('Translate'));
+            $translate = $container->appendChild($xml->createElement('Translate'));
             $translate->appendChild($xml->createElement('LanguageCode', $translateOpts['language']));
             $translate->appendChild($xml->createElement('DialectCode', $translateOpts['dialect']));
             $translate->appendChild($xml->createElement('Code', '01'));
